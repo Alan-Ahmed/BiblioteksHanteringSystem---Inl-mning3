@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 public static class BibliotekJsonHantering
 {
@@ -12,16 +10,28 @@ public static class BibliotekJsonHantering
         {
             if (File.Exists(filväg))
             {
+                if (new FileInfo(filväg).Length == 0)
+                {
+                    Console.WriteLine("JSON-filen är tom. En ny tom databas skapas.");
+                    return new Bibliotek();
+                }
+
                 string json = File.ReadAllText(filväg);
                 var bibliotek = JsonSerializer.Deserialize<Bibliotek>(json);
                 return bibliotek ?? new Bibliotek();
+            }
+            else
+            {
+                Console.WriteLine("JSON-filen saknas. En ny fil skapas.");
+                File.WriteAllText(filväg, JsonSerializer.Serialize(new Bibliotek(), new JsonSerializerOptions { WriteIndented = true }));
+                return new Bibliotek();
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Fel vid inläsning från JSON: {ex.Message}");
+            return new Bibliotek();
         }
-        return new Bibliotek();
     }
 
     public static void SparaDataTillJSON(Bibliotek bibliotek)
@@ -30,29 +40,11 @@ public static class BibliotekJsonHantering
         {
             string json = JsonSerializer.Serialize(bibliotek, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(filväg, json);
-            MirrorChangesToProjectRoot("LibraryData.json");
+            Console.WriteLine("Data har sparats till JSON.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Fel vid sparande till JSON: {ex.Message}");
-        }
-    }
-
-    private static void MirrorChangesToProjectRoot(string fileName)
-    {
-        string outputDir = AppDomain.CurrentDomain.BaseDirectory;
-        string projectRootDir = Path.Combine(outputDir, "../../../");
-        string sourceFilePath = Path.Combine(outputDir, fileName);
-        string destFilePath = Path.Combine(projectRootDir, fileName);
-
-        if (File.Exists(sourceFilePath))
-        {
-            File.Copy(sourceFilePath, destFilePath, true);
-            Console.WriteLine($"{fileName} har speglats till projektroten.");
-        }
-        else
-        {
-            Console.WriteLine($"Källfilen {fileName} hittades inte.");
         }
     }
 }
