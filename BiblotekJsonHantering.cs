@@ -1,46 +1,67 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 
 public static class BibliotekJsonHantering
 {
-    private static readonly string filväg = "LibraryData.json";
+    private static readonly string Filväg = "LibraryData.json";
 
     public static Bibliotek LaddaDataFrånJSON()
     {
         try
         {
-            if (File.Exists(filväg))
+            if (File.Exists(Filväg))
             {
-                if (new FileInfo(filväg).Length == 0)
+                string json = File.ReadAllText(Filväg);
+                Console.WriteLine($"Läser in data från {Filväg}...");
+
+                // Visa hela JSON-strängen för felsökning
+                Console.WriteLine($"JSON Innehåll: {json}");
+
+                if (string.IsNullOrEmpty(json) || json == "{}")
                 {
-                    Console.WriteLine("JSON-filen är tom. En ny tom databas skapas.");
-                    return new Bibliotek();
+                    Console.WriteLine("JSON-filen är tom eller innehåller ogiltiga data.");
+                    return new Bibliotek(new List<Bok>(), new List<Författare>());
                 }
 
-                string json = File.ReadAllText(filväg);
-                var bibliotek = JsonSerializer.Deserialize<Bibliotek>(json);
-                return bibliotek ?? new Bibliotek();
+                var jsonData = JsonSerializer.Deserialize<JsonBibliotek>(json);
+
+                if (jsonData == null || jsonData.Böcker == null || jsonData.Författare == null)
+                {
+                    Console.WriteLine("Felaktig JSON-struktur eller tomma data.");
+                    return new Bibliotek(new List<Bok>(), new List<Författare>());
+                }
+
+                Console.WriteLine($"Laddade {jsonData.Böcker.Count} böcker och {jsonData.Författare.Count} författare.");
+                return new Bibliotek(jsonData.Böcker, jsonData.Författare);
             }
             else
             {
-                Console.WriteLine("JSON-filen saknas. En ny fil skapas.");
-                File.WriteAllText(filväg, JsonSerializer.Serialize(new Bibliotek(), new JsonSerializerOptions { WriteIndented = true }));
-                return new Bibliotek();
+                Console.WriteLine($"Fil {Filväg} finns inte.");
             }
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"Fel vid JSON-deserialisering: {ex.Message}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fel vid inläsning från JSON: {ex.Message}");
-            return new Bibliotek();
+            Console.WriteLine($"Okänt fel vid läsning från JSON: {ex.Message}");
         }
+
+        return new Bibliotek(new List<Bok>(), new List<Författare>());
     }
+
+
+
 
     public static void SparaDataTillJSON(Bibliotek bibliotek)
     {
         try
         {
             string json = JsonSerializer.Serialize(bibliotek, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filväg, json);
-            Console.WriteLine("Data har sparats till JSON.");
+            File.WriteAllText(Filväg, json);
         }
         catch (Exception ex)
         {

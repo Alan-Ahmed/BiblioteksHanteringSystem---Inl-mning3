@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 public class Bibliotek
 {
-    private List<Bok> böcker = new List<Bok>();
-    private List<Författare> författare = new List<Författare>();
+    public List<Bok> Böcker { get; set; }
+    public List<Författare> Författare { get; set; }
 
-    public Bibliotek()
+    public Bibliotek(List<Bok> böcker, List<Författare> författare)
     {
-        // Om du vill att böcker ska läggas till här kan du göra det
+        Böcker = böcker ?? new List<Bok>();
+        Författare = författare ?? new List<Författare>();
     }
 
     public void LäggTillNyBok()
@@ -17,50 +17,60 @@ public class Bibliotek
         Bok nyBok = new Bok();
 
         Console.Write("Ange titel: ");
-        nyBok.Titel = Console.ReadLine();
+        nyBok.Title = Console.ReadLine();
 
-        Console.Write("Ange författare: ");
-        nyBok.Författare = Console.ReadLine();
+        Console.Write("Ange författarens namn: ");
+        string författarNamn = Console.ReadLine();
+
+        var författare = Författare.Find(f => f.Name.Equals(författarNamn, StringComparison.OrdinalIgnoreCase));
+        if (författare == null)
+        {
+            Console.Write("Ange författarens land: ");
+            string land = Console.ReadLine();
+            författare = new Författare
+            {
+                Name = författarNamn,
+                Id = Författare.Count + 1,
+                Country = land
+            };
+            Författare.Add(författare);
+        }
+        nyBok.Author = författare;
 
         Console.Write("Ange genre: ");
         nyBok.Genre = Console.ReadLine();
 
         Console.Write("Ange publiceringsår: ");
-        if (int.TryParse(Console.ReadLine(), out int år))
+        nyBok.PublishedYear = int.TryParse(Console.ReadLine(), out int år) ? år : 0;
+
+        Console.Write("Ange ISBN: ");
+        nyBok.ISBN = int.TryParse(Console.ReadLine(), out int isbn) ? isbn : 0;
+
+        Böcker.Add(nyBok);
+        Console.WriteLine("Ny bok har lagts till.");
+    }
+
+    public void VisaAllaBöckerOchFörfattare()
+    {
+        Console.WriteLine("\n--- Böcker ---");
+        if (Böcker.Count == 0)
         {
-            nyBok.Publiceringsår = år;
+            Console.WriteLine("Inga böcker finns.");
+        }
+        foreach (var bok in Böcker)
+        {
+            Console.WriteLine($"Titel: {bok.Title}, Författare: {bok.Author.Name}, Genre: {bok.Genre}, År: {bok.PublishedYear}");
         }
 
-        // Lägg till bok till listan
-        böcker.Add(nyBok);
-        Console.WriteLine("Ny bok har lagts till.");
-        BibliotekJsonHantering.SparaDataTillJSON(this);
+        Console.WriteLine("\n--- Författare ---");
+        if (Författare.Count == 0)
+        {
+            Console.WriteLine("Inga författare finns.");
+        }
+        foreach (var författare in Författare)
+        {
+            Console.WriteLine($"Namn: {författare.Name}, Land: {författare.Country}");
+        }
     }
 
-    public void LäggTillNyFörfattare()
-    {
-        Författare nyFörfattare = new Författare();
-
-        Console.Write("Ange namn: ");
-        nyFörfattare.Namn = Console.ReadLine();
-
-        Console.Write("Ange land: ");
-        nyFörfattare.Land = Console.ReadLine();
-
-        // Lägg till författare till listan
-        författare.Add(nyFörfattare);
-        Console.WriteLine("Ny författare har lagts till.");
-        BibliotekJsonHantering.SparaDataTillJSON(this);
-    }
-
-    public void ListaAllaBöckerOchFörfattare()
-    {
-        Console.WriteLine("\n--- Alla Böcker ---");
-        foreach (var bok in böcker)
-            Console.WriteLine($"Titel: {bok.Titel}, Författare: {bok.Författare}, Betyg: {bok.GenomsnittligtBetyg}");
-
-        Console.WriteLine("\n--- Alla Författare ---");
-        foreach (var f in författare)
-            Console.WriteLine($"Namn: {f.Namn}, Land: {f.Land}");
-    }
 }

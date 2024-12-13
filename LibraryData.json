@@ -1,4 +1,40 @@
 {
-  "böcker": [],
-  "författare": []
+  "Böcker": [
+    {
+      "Title": "Salems Lot",
+      "Author": {
+        "Name": "Stephen King",
+        "Id": 1,
+        "Country": "United States"
+      },
+      "Id": 1,
+      "Genre": "Thriller",
+      "PublishedYear": 1975,
+      "ISBN": 1111
+    },
+    {
+      "Title": "Deeply Odd",
+      "Author": {
+        "Name": "Dean Koontz",
+        "Id": 2,
+        "Country": "United States"
+      },
+      "Id": 2,
+      "Genre": "Thriller",
+      "PublishedYear": 2013,
+      "ISBN": 2222
+    }
+  ],
+  "Författare": [
+    {
+      "Name": "Stephen King",
+      "Id": 1,
+      "Country": "United States"
+    },
+    {
+      "Name": "Dean Koontz",
+      "Id": 2,
+      "Country": "United States"
+    }
+  ]
 }
